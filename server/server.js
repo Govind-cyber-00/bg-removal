@@ -1,8 +1,8 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
-import connectDB from './configs/mongodb.js'
-import userRouter from './routes/userRoutes.js'
+import connectDB from "./configs/mongodb.js";
+import userRoutes from './routes/userRoutes.js';
 
 const app = express()
 
@@ -12,7 +12,7 @@ app.use(cors())
 app.get('/', (req, res) => {
   res.send("API Working 🚀")
 })
-app.use('/api/user',userRouter)
+app.use('/api/user',userRoutes)
 app.get('/api/test', async (req, res) => {
   try {
     await connectDB()
