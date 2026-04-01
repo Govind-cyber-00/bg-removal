@@ -1,5 +1,5 @@
 import { Webhook } from "svix";
-import  userModel  from "../models/userModel.js";
+import userModel from "../models/userModel.js";
 
 // API Controller function to manage Clerk User with database
 // http://localhost:4000/api/user/webhooks
@@ -8,7 +8,7 @@ const clerkWebhooks = async (req, res) => {
   try {
     // Create a svix instance with Clerk webhook secret
     const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
-
+    console.log("Webhook hit hua");
     await whook.verify(JSON.stringify(req.body), {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
@@ -57,6 +57,20 @@ const clerkWebhooks = async (req, res) => {
   }
 };
 
-export { clerkWebhooks };
 
+
+// API controller function to get user available credits data
+const usercredits = async (req, res) => {
+  try {
+    const { clerkId } = req.body
+    const userData = await userModel.findOne({ clerkId })
+    res.json({ success: true, credits: userData.creditBalance })
+  } catch (error) {
+    console.log(error.message);
+    res.json({ success: false, message: error.message })
+
+  }
+}
+export { clerkWebhooks,usercredits };
 export default clerkWebhooks;
+
