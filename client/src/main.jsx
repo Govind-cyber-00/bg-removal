@@ -4,14 +4,19 @@ import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import { ClerkProvider } from '@clerk/react'
+import AppContextProvider from './context/AppContext.jsx'
 
 createRoot(document.getElementById('root')).render(
- <BrowserRouter>
- <ClerkProvider>
-    <App/> 
- </ClerkProvider>
- 
- 
- 
- </BrowserRouter>,
+   <BrowserRouter>
+      <ClerkProvider>
+
+         <AppContextProvider>
+            <App />
+         </AppContextProvider>
+
+      </ClerkProvider>
+
+
+
+   </BrowserRouter>,
 )
