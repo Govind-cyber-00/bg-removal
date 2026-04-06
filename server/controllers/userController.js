@@ -1,14 +1,11 @@
 import { Webhook } from "svix";
 import userModel from "../models/userModel.js";
 
-// API Controller function to manage Clerk User with database
-// http://localhost:4000/api/user/webhooks
-
+// Clerk webhook
 const clerkWebhooks = async (req, res) => {
   try {
-    // Create a svix instance with Clerk webhook secret
     const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
-    console.log("Webhook hit hua");
+
     await whook.verify(JSON.stringify(req.body), {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
@@ -57,20 +54,52 @@ const clerkWebhooks = async (req, res) => {
   }
 };
 
+// Manual user create (frontend support)
+const createUser = async (req, res) => {
+  try {
+    const { clerkId, email, firstName, lastName, photo } = req.body;
 
+    let user = await userModel.findOne({ clerkId });
 
-// API controller function to get user available credits data
+    if (!user) {
+      user = await userModel.create({
+        clerkId,
+        email,
+        firstName,
+        lastName,
+        photo,
+      });
+    }
+
+    return res.json({ success: true, user });
+  } catch (error) {
+    console.log("Create User Error:", error.message);
+    return res.json({ success: false, message: error.message });
+  }
+};
+
+// Get credits
 const usercredits = async (req, res) => {
   try {
-    const { clerkId } = req.body
-    const userData = await userModel.findOne({ clerkId })
-    res.json({ success: true, credits: userData.creditBalance })
+    const clerkId = req.auth.userId;
+
+    console.log("Credits Clerk ID:", clerkId);
+
+    const userData = await userModel.findOne({ clerkId });
+
+    if (!userData) {
+      return res.json({ success: false, message: "User Not Found" });
+    }
+
+    res.json({
+      success: true,
+      creditBalance: userData.creditBalance,
+    });
   } catch (error) {
     console.log(error.message);
-    res.json({ success: false, message: error.message })
-
+    res.json({ success: false, message: error.message });
   }
-}
-export { clerkWebhooks,usercredits };
-export default clerkWebhooks;
+};
 
+export { clerkWebhooks, usercredits, createUser };
+export default clerkWebhooks;

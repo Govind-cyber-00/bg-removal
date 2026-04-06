@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import connectDB from "./configs/mongodb.js";
 import userRoutes from "./routes/userRoutes.js";
+import imageRouter from "./routes/imageRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -20,6 +21,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/user", userRoutes);
+app.use('/api/image',imageRouter)
+
 
 app.get("/api/test", async (req, res) => {
   try {
