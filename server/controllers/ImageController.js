@@ -1,12 +1,11 @@
 import axios from "axios";
-import fs from "fs";
 import FormData from "form-data";
 import userModel from "../models/userModel.js";
 
 // Controller function to remove bg from image
 const removeBgImage = async (req, res) => {
   try {
-    // ✅ Clerk ID from auth middleware
+    // Clerk ID from auth middleware
     const clerkId = req.auth.userId;
     console.log("Image Remove Clerk ID:", clerkId);
 
@@ -28,14 +27,9 @@ const removeBgImage = async (req, res) => {
       return res.json({ success: false, message: "No Image Uploaded" });
     }
 
-    const imagePath = req.file.path;
-    console.log("Uploaded Image Path:", imagePath);
-
-    // Read image file
-    const imageFile = fs.createReadStream(imagePath);
-
+    // Vercel-safe: use memory buffer instead of file path
     const formData = new FormData();
-    formData.append("image_file", imageFile);
+    formData.append("image_file", req.file.buffer, req.file.originalname);
 
     // Clipdrop API call
     const response = await axios.post(
@@ -60,9 +54,6 @@ const removeBgImage = async (req, res) => {
       { new: true }
     );
 
-    // delete uploaded temp file
-    fs.unlinkSync(imagePath);
-
     return res.json({
       success: true,
       resultImage,
@@ -72,6 +63,7 @@ const removeBgImage = async (req, res) => {
 
   } catch (error) {
     console.log("Remove BG Error:", error.response?.data || error.message);
+
     return res.json({
       success: false,
       message: error.response?.data?.message || error.message,

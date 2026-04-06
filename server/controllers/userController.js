@@ -18,22 +18,27 @@ const clerkWebhooks = async (req, res) => {
       case "user.created": {
         const userData = {
           clerkId: data.id,
-          email: data.email_addresses[0].email_address,
-          firstName: data.first_name,
-          lastName: data.last_name,
-          photo: data.image_url,
+          email: data.email_addresses?.[0]?.email_address || "",
+          firstName: data.first_name || "",
+          lastName: data.last_name || "",
+          photo: data.image_url || "",
         };
 
-        await userModel.create(userData);
+        const existingUser = await userModel.findOne({ clerkId: data.id });
+
+        if (!existingUser) {
+          await userModel.create(userData);
+        }
+
         return res.json({ success: true, message: "User created" });
       }
 
       case "user.updated": {
         const userData = {
-          email: data.email_addresses[0].email_address,
-          firstName: data.first_name,
-          lastName: data.last_name,
-          photo: data.image_url,
+          email: data.email_addresses?.[0]?.email_address || "",
+          firstName: data.first_name || "",
+          lastName: data.last_name || "",
+          photo: data.image_url || "",
         };
 
         await userModel.findOneAndUpdate({ clerkId: data.id }, userData);
@@ -46,10 +51,13 @@ const clerkWebhooks = async (req, res) => {
       }
 
       default:
-        return res.json({ success: false, message: "Unhandled webhook event" });
+        return res.json({
+          success: false,
+          message: "Unhandled webhook event",
+        });
     }
   } catch (error) {
-    console.log(error.message);
+    console.log("Webhook Error:", error.message);
     return res.json({ success: false, message: error.message });
   }
 };
@@ -59,15 +67,22 @@ const createUser = async (req, res) => {
   try {
     const { clerkId, email, firstName, lastName, photo } = req.body;
 
+    if (!clerkId || !email) {
+      return res.json({
+        success: false,
+        message: "clerkId and email are required",
+      });
+    }
+
     let user = await userModel.findOne({ clerkId });
 
     if (!user) {
       user = await userModel.create({
         clerkId,
         email,
-        firstName,
-        lastName,
-        photo,
+        firstName: firstName || "",
+        lastName: lastName || "",
+        photo: photo || "",
       });
     }
 
@@ -78,7 +93,7 @@ const createUser = async (req, res) => {
   }
 };
 
-// Get credits
+// Get user credits
 const usercredits = async (req, res) => {
   try {
     const clerkId = req.auth.userId;
@@ -91,13 +106,13 @@ const usercredits = async (req, res) => {
       return res.json({ success: false, message: "User Not Found" });
     }
 
-    res.json({
+    return res.json({
       success: true,
       creditBalance: userData.creditBalance,
     });
   } catch (error) {
-    console.log(error.message);
-    res.json({ success: false, message: error.message });
+    console.log("Credits Error:", error.message);
+    return res.json({ success: false, message: error.message });
   }
 };
 
