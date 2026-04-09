@@ -68,11 +68,11 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://bg-removal-gys.vercel.app"
+      "https://bg-removal-gys.vercel.app",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "token"],
   })
 );
 
@@ -89,6 +89,5 @@ app.get("/api/test", (req, res) => {
 // routes
 app.use("/api/user", userRoutes);
 app.use("/api/image", imageRouter);
-
 
 export default app;
