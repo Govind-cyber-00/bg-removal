@@ -6,6 +6,7 @@ import userRoutes from "./routes/userRoutes.js";
 import imageRouter from "./routes/imageRoutes.js";
 
 const app = express();
+const PORT = process.env.PORT || 4000;
 
 // middleware
 app.use(express.json());
@@ -28,6 +29,11 @@ app.get("/api/test", async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
+});
+
+// ✅ LOCAL SERVER START
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 export default app;

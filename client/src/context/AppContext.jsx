@@ -1,5 +1,5 @@
 import { useAuth, useClerk, useUser } from "@clerk/react";
-import { useState, createContext } from "react";
+import { useState, createContext, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -19,12 +19,22 @@ const AppContextProvider = ({ children }) => {
   const { isSignedIn, user } = useUser();
   const { openSignIn } = useClerk();
 
+  // Debug backend URL
+  useEffect(() => {
+    console.log("Backend URL:", backendUrl);
+  }, [backendUrl]);
+
   // ----------------------------
   // CREATE USER IN DATABASE
   // ----------------------------
   const createUserInDB = async () => {
     try {
-      if (!user || !backendUrl) return false;
+      if (!user) return false;
+
+      if (!backendUrl) {
+        console.log("Backend URL missing");
+        return false;
+      }
 
       const payload = {
         clerkId: user.id,
@@ -41,6 +51,7 @@ const AppContextProvider = ({ children }) => {
       return data?.success === true;
     } catch (error) {
       console.log("Create User Error:", error?.response?.data || error.message);
+      toast.error(error?.response?.data?.message || "User create failed");
       return false;
     }
   };
@@ -51,17 +62,29 @@ const AppContextProvider = ({ children }) => {
   const loadCreditsData = async () => {
     try {
       if (!isSignedIn || !user) return;
+
       if (!backendUrl) {
         toast.error("Backend URL missing");
         return;
       }
 
-      await createUserInDB();
+      const created = await createUserInDB();
+
+      if (!created) {
+        console.log("User create skipped/failed");
+      }
 
       const token = await getToken();
 
+      if (!token) {
+        toast.error("Token not found");
+        return;
+      }
+
       const { data } = await axios.get(`${backendUrl}/api/user/credits`, {
-        headers: { token },
+        headers: {
+          token,
+        },
       });
 
       console.log("Credits Response:", data);
@@ -73,7 +96,7 @@ const AppContextProvider = ({ children }) => {
       }
     } catch (error) {
       console.log("Load Credits Error:", error?.response?.data || error.message);
-      toast.error(error?.response?.data?.message || error.message);
+      toast.error(error?.response?.data?.message || "Credits load failed");
     }
   };
 
@@ -99,16 +122,20 @@ const AppContextProvider = ({ children }) => {
       setResultImage(null);
       navigate("/result");
 
-      // ensure user exists in DB
+      // Ensure user exists
       const userCreated = await createUserInDB();
 
       if (!userCreated) {
         toast.error("User creation failed");
-        setLoading(false);
         return;
       }
 
       const token = await getToken();
+
+      if (!token) {
+        toast.error("Token not found");
+        return;
+      }
 
       const formData = new FormData();
       formData.append("image", uploadedImage);
@@ -146,7 +173,7 @@ const AppContextProvider = ({ children }) => {
       }
     } catch (error) {
       console.log("Remove BG Error:", error?.response?.data || error.message);
-      toast.error(error?.response?.data?.message || error.message);
+      toast.error(error?.response?.data?.message || "Background remove failed");
     } finally {
       setLoading(false);
     }
@@ -175,7 +202,11 @@ const AppContextProvider = ({ children }) => {
     clearImageState,
   };
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  return (
+    <AppContext.Provider value={value}>
+      {children}
+    </AppContext.Provider>
+  );
 };
 
 export default AppContextProvider;
