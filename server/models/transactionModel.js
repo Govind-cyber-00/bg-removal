@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import payments from "razorpay/dist/types/payments";
 
 const transactionSchema = new mongoose.Schema({
     clerkId: { type: String, required: true },
@@ -8,8 +7,10 @@ const transactionSchema = new mongoose.Schema({
     credits: { type: Number, required: true },
     payment: { type: Boolean, default: false },
     date: { type: Number },
-})
+});
 
-const transactionModel = mongoose.models.transaction || mongoose.model('transaction',transactionSchema)
+const transactionModel =
+    mongoose.models.transaction ||
+    mongoose.model("transaction", transactionSchema);
 
-export default transactionModel
+export default transactionModel;

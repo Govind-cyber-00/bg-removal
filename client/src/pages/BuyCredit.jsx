@@ -79,6 +79,7 @@ const BuyCredit = () => {
 
       if (data.success) {
         initPay(data.order)
+        navigate('/')
       } else {
         toast.error(data.message)
       }
