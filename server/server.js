@@ -8,12 +8,21 @@ import imageRouter from "./routes/imageRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// middleware
-app.use(express.json());
-app.use(cors());
-
 // connect DB
 connectDB();
+
+// middleware
+app.use(express.json());
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://bg-removal-gys.vercel.app"
+    ],
+    credentials: true,
+  })
+);
 
 // routes
 app.get("/", (req, res) => {
@@ -31,7 +40,7 @@ app.get("/api/test", async (req, res) => {
   }
 });
 
-// ✅ LOCAL SERVER START
+// local server start
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
